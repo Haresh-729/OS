@@ -1,0 +1,88 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int MAX_RESOURCES = 5;
+int MAX_PROCESSES = 5;
+
+vector<int> available(MAX_RESOURCES);
+vector<vector<int>> maximum(MAX_PROCESSES, vector<int>(MAX_RESOURCES));
+vector<vector<int>> allocation(MAX_PROCESSES, vector<int>(MAX_RESOURCES));
+vector<vector<int>> need(MAX_PROCESSES, vector<int>(MAX_RESOURCES));
+vector<bool> finished(MAX_PROCESSES, false);
+
+vector<int> safeSequence;
+
+void initialize() {
+    cout << "Enter number of resources: ";
+    cin >> MAX_RESOURCES;
+    cout << "Enter number of processes: ";
+    cin >> MAX_PROCESSES;
+    cout << "Enter the number of resources available:\n";
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        cin >> available[i];
+    }
+    cout << "Enter the maximum demand of each process:\n";
+    for (int i = 0; i < MAX_PROCESSES; ++i) {
+        cout << "For process " << i << ":\n";
+        for (int j = 0; j < MAX_RESOURCES; ++j) {
+            cin >> maximum[i][j];
+        }
+    }
+    cout << "Enter the allocation for each process:\n";
+    for (int i = 0; i < MAX_PROCESSES; ++i) {
+        cout << "For process " << i << ":\n";
+        for (int j = 0; j < MAX_RESOURCES; ++j) {
+            cin >> allocation[i][j];
+            need[i][j] = maximum[i][j] - allocation[i][j];
+        }
+    }
+}
+
+bool isSafeState() {
+    vector<int> work = available;
+    vector<bool> finish(MAX_PROCESSES, false);
+    int count = 0;
+    while (count < MAX_PROCESSES) {
+        bool found = false;
+        for (int i = 0; i < MAX_PROCESSES; ++i) {
+            if (!finish[i]) {
+                int j;
+                for (j = 0; j < MAX_RESOURCES; ++j) {
+                    if (need[i][j] > work[j]) {
+                        break;
+                    }
+                }
+                if (j == MAX_RESOURCES) {
+                    for (int k = 0; k < MAX_RESOURCES; ++k) {
+                        work[k] += allocation[i][k];
+                    }
+                    finish[i] = true;
+                    found = true;
+                    safeSequence.push_back(i);
+                    ++count;
+                }
+            }
+        }
+        if (!found) break; // if no process found, the system is in an unsafe state
+    }
+    return count == MAX_PROCESSES;
+}
+
+int main() {
+    cout << "***IMPLEMENTATION OF BANKER'S ALGORITHM***" << endl;
+    cout << "***PERFORMED BY HARESH KURADE 60004230277***" << endl;
+    initialize();
+    if (isSafeState()) {
+        cout << "The system is in a safe state." << endl;
+        cout << "Safe Sequence: ";
+        for (int i = 0; i < safeSequence.size(); ++i) {
+            cout << safeSequence[i] << " ";
+        }
+        cout << endl;
+    } else {
+        cout << "The system is in an unsafe state." << endl;
+    }
+    return 0;
+}

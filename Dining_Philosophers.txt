@@ -1,0 +1,55 @@
+/*##############################################################################################
+############################## Need to check if right or wrong #################################
+##############################################################################################
+##############################################################################################
+
+
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <vector>
+#include <chrono>
+
+using namespace std;
+
+const int NUM_PHILOSOPHERS = 5;
+mutex forks[NUM_PHILOSOPHERS];
+
+void philosopher(int id) {
+    int left = id;
+    int right = (id + 1) % NUM_PHILOSOPHERS;
+
+    while (true) {
+        // Thinking
+        cout << "Philosopher " << id << " is thinking." << endl;
+        this_thread::sleep_for(chrono::milliseconds(500)); // Simulate thinking
+
+        // Get forks
+        forks[left].lock();
+        forks[right].lock();
+
+        // Eating
+        cout << "Philosopher " << id << " is eating." << endl;
+        this_thread::sleep_for(chrono::milliseconds(500)); // Simulate eating
+
+        // Release forks
+        forks[right].unlock();
+        forks[left].unlock();
+    }
+}
+
+int main() {
+    vector<thread> philosopherThreads;
+    
+    // Create philosopher threads
+    for (int i = 0; i < NUM_PHILOSOPHERS; ++i) {
+        philosopherThreads.push_back(thread(philosopher, i));
+    }
+
+    // Join threads
+    for (int i = 0; i < NUM_PHILOSOPHERS; ++i) {
+        philosopherThreads[i].join();
+    }
+
+    return 0;
+}
