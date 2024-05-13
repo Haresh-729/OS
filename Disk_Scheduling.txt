@@ -1,116 +1,130 @@
 // PERFORMNED BY HARESH KURADE (C200) 60004230277.
 // DISK SCHEDULING ALGORITHMS (FCFS, SSTF, SCAN, LOOK, CSCAN, CLOOK)
-/*##############################################################################
-######################### User Input remaining ###############################
-##############################################################################
-##############################################################################*/
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <cmath>
 using namespace std;
 
-// Function to calculate total seek time
-int calculateSeekTime(vector<int> requests, int head) {
+// First Come First Serve (FCFS) Disk Scheduling Algorithm
+pair<int, vector<int>> fcfs(vector<int> requests, int head) {
     int seekTime = 0;
+    vector<int> sequence;
     int currentTrack = head;
+    sequence.push_back(currentTrack);
     for (int i = 0; i < requests.size(); ++i) {
         seekTime += abs(requests[i] - currentTrack);
         currentTrack = requests[i];
+        sequence.push_back(currentTrack);
     }
-    return seekTime;
-}
-
-// First Come First Serve (FCFS) Disk Scheduling Algorithm
-int fcfs(vector<int> requests, int head) {
-    return calculateSeekTime(requests, head);
+    return make_pair(seekTime,sequence);
 }
 
 // Shortest Seek Time First (SSTF) Disk Scheduling Algorithm
-int sstf(vector<int> requests, int head) {
+pair<int,vector<int>> sstf(vector<int> requests, int head) {
     int seekTime = 0;
+    vector<int> sequence;
     int currentTrack = head;
+    sequence.push_back(currentTrack);
     while (!requests.empty()) {
         auto it = min_element(requests.begin(), requests.end(), [currentTrack](int a, int b) {
             return abs(a - currentTrack) < abs(b - currentTrack);
         });
         seekTime += abs(*it - currentTrack);
         currentTrack = *it;
+        sequence.push_back(currentTrack);
         requests.erase(it);
     }
-    return seekTime;
+    return make_pair(seekTime, sequence);
 }
 
 // SCAN Disk Scheduling Algorithm
-int scan(vector<int> requests, int head, int direction) {
+pair<int,vector<int>> scan(vector<int> requests, int head, int direction) {
     int seekTime = 0;
+    vector<int> sequence;
     int currentTrack = head;
+    sequence.push_back(currentTrack);
     sort(requests.begin(), requests.end());
     auto it = find(requests.begin(), requests.end(), head);
     if (direction == 0) { // Towards 0
         for (auto i = it; i >= requests.begin(); --i) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
         }
         seekTime += currentTrack; // Move to track 0;
         currentTrack = 0;
+        sequence.push_back(currentTrack);
         for (auto i = it + 1; i < requests.end(); ++i) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
         }
     } else { // Towards max track
         for (auto i = it; i < requests.end(); ++i) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
         }
         seekTime += abs(requests.back() - currentTrack); // Move to max track
         currentTrack = requests.back();
+        sequence.push_back(currentTrack);
         for (auto i = it - 1; i >= requests.begin(); --i) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
         }
     }
-    return seekTime;
+    return make_pair(seekTime, sequence);
 }
 
 // LOOK Disk Scheduling Algorithm
-int look(vector<int> requests, int head, int direction) {
+pair<int, vector<int>> look(vector<int> requests, int head, int direction) {
     int seekTime = 0;
+    vector<int> sequence;
     int currentTrack = head;
+    sequence.push_back(currentTrack);
     sort(requests.begin(), requests.end());
     auto it = find(requests.begin(), requests.end(), head);
     if (direction == 0) { // Towards 0
         for (auto i = it; i >= requests.begin(); --i) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
         }
         for (auto i = it + 1; i < requests.end(); ++i) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
         }
     } else { // Towards max track
         for (auto i = it; i < requests.end(); ++i) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
         }
         for (auto i = it - 1; i >= requests.begin(); --i) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
         }
     }
-    return seekTime;
+    return make_pair(seekTime, sequence);
 }
 
 // Circular SCAN (CSCAN) Disk Scheduling Algorithm
-int cscan(vector<int> requests, int head, int direction) {
+pair<int, vector<int>> cscan(vector<int> requests, int head, int direction) {
     int seekTime = 0;
+    vector<int> sequence;
     int currentTrack = head;
+    sequence.push_back(currentTrack);
     sort(requests.begin(), requests.end());
     auto it = find(requests.begin(), requests.end(), head);
     if (direction == 0) { // Towards 0
         for (auto i = it; i >= requests.begin();) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
             ++i;
         }
         seekTime += abs(requests.front() - currentTrack); // Move to track 0;
@@ -118,62 +132,114 @@ int cscan(vector<int> requests, int head, int direction) {
         for (auto i = requests.begin(); i < it; ++i) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
         }
     } else { // Towards max track
         for (auto i = it; i < requests.end(); ++i) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
         }
         seekTime += abs(requests.back() - currentTrack); // Move to max track
         currentTrack = requests.back();
         for (auto i = it - 1; i >= requests.begin();) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
             --i;
         }
     }
-    return seekTime;
+    return make_pair(seekTime, sequence);
 }
 
 // Circular LOOK (CLOOK) Disk Scheduling Algorithm
-int clook(vector<int> requests, int head, int direction) {
+pair<int, vector<int>> clook(vector<int> requests, int head, int direction) {
     int seekTime = 0;
+    vector<int> sequence;
     int currentTrack = head;
+    sequence.push_back(currentTrack);
     sort(requests.begin(), requests.end());
     auto it = find(requests.begin(), requests.end(), head);
     if (direction == 0) { // Towards 0
         for (auto i = it; i >= requests.begin();) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
             --i;
         }
         for (auto i = requests.begin(); i < it; ++i) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
         }
     } else { // Towards max track
         for (auto i = it; i < requests.end(); ++i) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
         }
         for (auto i = it - 1; i >= requests.begin();) {
             seekTime += abs(*i - currentTrack);
             currentTrack = *i;
+            sequence.push_back(currentTrack);
             --i;
         }
     }
-    return seekTime;
+    return make_pair(seekTime, sequence);
 }
 
 int main() {
+    int headCounts = 0;
     vector<int> requests = {82, 170, 43, 140, 24, 16, 190}; // Example request seq
+
+    cout<<"Enter the number of head sequence to travel :";
+    cin>>headCounts;
+
+    for(int i = 0; i< headCounts; i++){
+        int headNo = 0;
+        cout<<"Enter the "<<i+1<< " headNo. : ";
+        cin>>headNo;
+        requests[i] = headNo;
+    }
+
     int head = 50; // Example initial head position
+    cout<<"Enter the current head position :";
+    cin>>head;
+
     int direction = 1; // 0 for towards track, 1 for towards max track
-    cout << "FCFS Seek Time: " << fcfs(requests, head) << endl;
-    cout << "SSTF Seek Time: " << sstf(requests, head) << endl;
-    cout << "SCAN Seek Time: " << scan(requests, head, direction) << endl;
-    cout << "LOOK Seek Time: " << look(requests, head, direction) << endl;
-    cout << "CSCAN Seek Time: " << cscan(requests, head, direction) << endl;
-    cout << "CLOOK Seek Time: " << clook(requests, head, direction) << endl;
+    cout<<"Select 0. Down or 1. Up";
+    cin>>direction;
+    auto result = fcfs(requests, head);
+    cout << "\nFCFS Seek Time: " << result.first << " Head Sequence : ";
+    for(int track : result.second){
+        cout<< track << " ";
+    }
+    
+    result = sstf(requests, head);
+    cout << "\nSSTF Seek Time: " << result.first << " Head Sequence :";
+    for(int track : result.second){
+        cout<< track << " ";
+    }
+    
+    result = scan(requests, head, direction);
+    cout << "\nSCAN Seek Time: " << result.first << " Head Sequence :";
+    for(int track : result.second){
+        cout<< track << " ";
+    }
+    result = look(requests, head, direction);
+    cout << "\nLOOK Seek Time: " << result.first << " Head Sequence :";
+    for(int track : result.second){
+        cout<< track << " ";
+    }
+    result = cscan(requests, head, direction);
+    cout << "\nCSCAN Seek Time: " << result.first << " Head Sequence :";
+    for(int track : result.second){
+        cout<< track << " ";
+    }
+    result = clook(requests, head, direction);
+    cout << "\nCLOOK Seek Time: " << result.first << " Head Sequence :";
+    for(int track : result.second){
+        cout<< track << " ";
+    }
     return 0;
 }
